@@ -48,25 +48,18 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<HashMap<String,Object>> myDataset=new ArrayList<>();
     private Map<String,Object> mydataset1=new HashMap<>();
     private FirebaseFirestore lvfirestore;
-    private DocumentSnapshot userdatasnap;
-    private LoaderTextView loaderTextView;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         lvfirestore=FirebaseFirestore.getInstance();
         recyclerView = (RecyclerView) findViewById(R.id.recyclelist);
-
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
 
-        // use a linear layout manager
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        lvfirestore.collection("USER").orderBy("createdDate").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        lvfirestore.collection("USER").orderBy("createdDate",Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 ArrayList<Map<String,Object>> list = new ArrayList<>();
@@ -94,47 +87,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-        lvfirestore.collection("USER").document().get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                userdatasnap=documentSnapshot;
-                mydataset1=userdatasnap.getData();
-            }
-        });
-
-        // specify an adapter (see also next example)
-        //mAdapter = new MyAdapter(myDataset);
-        //recyclerView.setAdapter(mAdapter);
     }
 
     public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
-        // Provide a direct reference to each of the views within a data item
-        // Used to cache the views within the item layout for fast access
         public class ViewHolder extends RecyclerView.ViewHolder {
-            // Your holder should contain a member variable
-            // for any view that will be set as you render a row
             public TextView nameTextView;
             public TextView ageTextView;
             public ShimmerLayout shimmerLayout;
 
-            // We also create a constructor that accepts the entire item row
-            // and does the view lookups to find each subview
             public ViewHolder(View itemView) {
-                // Stores the itemView in a public final member variable that can be used
-                // to access the context from any ViewHolder instance.
                 super(itemView);
                 nameTextView = (TextView) itemView.findViewById(R.id.nametext);
                 ageTextView = (TextView) itemView.findViewById(R.id.agetext);
             }
         }
 
-        // Store a member variable for the contacts
         private ArrayList<Map<String,Object>> ulist;
 
-        // Pass in the contact array into the constructor
         public MyAdapter(ArrayList<Map<String,Object>> userlist) {
             ulist=userlist;
         }
@@ -144,25 +114,18 @@ public class MainActivity extends AppCompatActivity {
             Context context = parent.getContext();
             LayoutInflater inflater = LayoutInflater.from(context);
 
-            // Inflate the custom layout
             View contactView = inflater.inflate(R.layout.listitem, parent, false);
-
-            // Return a new holder instance
             ViewHolder viewHolder = new ViewHolder(contactView);
             return viewHolder;
         }
 
-        // Involves populating data into the item through holder
         @Override
         public void onBindViewHolder(MyAdapter.ViewHolder viewHolder, int position) {
-            // Get the data model based on position
             TextView nametext=viewHolder.nameTextView;
             TextView agetext=viewHolder.ageTextView;
             nametext.setText("Name: "+ulist.get(position).get("Name").toString());
             agetext.setText("Age: "+ulist.get(position).get("Age").toString());
         }
-
-        // Returns the total count of items in the list
         @Override
         public int getItemCount() {
             return ulist.size();
